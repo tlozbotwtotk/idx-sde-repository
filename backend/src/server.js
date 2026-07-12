@@ -3,6 +3,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const database = require("./connection");
+const properties = require("./properties_route");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -26,6 +27,8 @@ app.get("/api/health", async (req, res) => {
     });
   }
 });
+
+app.use("/api/properties", properties);
 
 app.listen(PORT, () => {
   console.log(`API running on http://localhost:${PORT}`);
