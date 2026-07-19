@@ -16,8 +16,11 @@ application must include:
 • Database: MySQL 8 running in Docker 
 • Testing: Jest + React Testing Library + Supertest
 
-### Week 1
-(in progress)
+### Week 1: Environment Setup & Database Import 
+MySQL runs in docker with tables populated with data with functional search queries.
 
-### Week 2
+### Week 2: Backend Foundation + REST API Basics 
+A Node/Express server works with a health check endpoint (along with error codes).
+
+### Week 3: Property Search Endpoint with Filters & Indexing
 (in progress)
