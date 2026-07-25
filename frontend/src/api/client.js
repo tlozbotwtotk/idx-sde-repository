@@ -1,0 +1,67 @@
+const API_BASE = '';
+
+export async function fetchProperties(params = {}) {
+  try {
+    const query = new URLSearchParams(params).toString();
+
+    const url = `${API_BASE}/api/properties${query ? `?${query}` : ''}`;
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(
+        `HTTP ${response.status}: ${response.statusText}`
+      );
+    }
+
+    return await response.json();
+
+  } catch (error) {
+    console.error("API Error:", error);
+    throw error;
+  }
+}
+
+export async function fetchPropertyDetail(id) {
+  try {
+    const response = await fetch(
+      `${API_BASE}/api/properties/${id}`
+    );
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error("Property not found");
+      }
+
+      throw new Error(
+        `HTTP ${response.status}: ${response.statusText}`
+      );
+    }
+
+    return await response.json();
+
+  } catch (error) {
+    console.error("API Error:", error);
+    throw error;
+  }
+}
+
+export async function fetchOpenHouses(id) {
+  try {
+    const response = await fetch(
+      `${API_BASE}/api/properties/${id}/openhouses`
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        `HTTP ${response.status}: ${response.statusText}`
+      );
+    }
+
+    return await response.json();
+
+  } catch (error) {
+    console.error("API Error:", error);
+    throw error;
+  }
+}
