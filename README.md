@@ -25,5 +25,8 @@ A Node/Express server works with a health check endpoint (along with error codes
 ### Week 3: Property Search Endpoint with Filters & Indexing
 A working, filterable GET /api/properties endpoint with proper database indexing for city, zipcode, min price, max price, beds, and baths
 
-### Week 4:  Property Detail & Open House Endpoints
+### Week 4: Property Detail & Open House Endpoints
 Added 2 new endpoints: property by ListingID and openhouses by propertyID
+
+### Week 5: React Setup and Listings Page
+A React frontend app that fetches the backend info and displays it on the various property cards
