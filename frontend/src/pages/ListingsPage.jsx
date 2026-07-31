@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { fetchProperties } from "../api/client";
+import PropertyFilters from "../components/PropertyFilters";
 import "../App.css";
 
 function ListingsPage() {
@@ -7,10 +8,11 @@ function ListingsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [total, setTotal] = useState(0);
+  const [filters, setFilters] = useState({});
 
   useEffect(() => {
     loadProperties();
-  }, []);
+  }, [filters]);
 
   async function loadProperties() {
     try {
@@ -18,6 +20,7 @@ function ListingsPage() {
       setError(null);
 
       const data = await fetchProperties({
+        ...filters,
         limit: 20,
         offset: 0,
       });
@@ -32,6 +35,10 @@ function ListingsPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  function handleSearch(newFilters) {
+    setFilters(newFilters);
   }
 
   if (loading) {
@@ -54,18 +61,26 @@ function ListingsPage() {
     <div className="listings-page">
       <h1>Property Listings</h1>
 
+      <PropertyFilters onSearch={handleSearch} />
+
       <p>
         Showing {properties.length} of {total} properties
       </p>
 
-      <div className="property-grid">
-        {properties.map((property) => (
-          <PropertyCard
-            key={property.L_ListingID}
-            property={property}
-          />
-        ))}
-      </div>
+      {properties.length === 0 ? (
+        <div className="no-results">
+          No properties found. Try adjusting your filters.
+        </div>
+      ) : (
+        <div className="property-grid">
+          {properties.map((property) => (
+            <PropertyCard
+              key={property.L_ListingID}
+              property={property}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
