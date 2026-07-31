@@ -30,3 +30,6 @@ Added 2 new endpoints: property by ListingID and openhouses by propertyID
 
 ### Week 5: React Setup and Listings Page
 A React frontend app that fetches the backend info and displays it on the various property cards
+
+### Week 6: Filters and Testing Intro
+The frontend app now includes filters and unit tests are introduced
