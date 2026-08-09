@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import { describe, test, expect, vi, afterEach } from "vitest";
-import '@testing-library/jest-dom/vitest';
+import "@testing-library/jest-dom/vitest";
 import PropertyFilters from "./PropertyFilters";
 
 afterEach(() => {
@@ -21,11 +21,18 @@ describe("PropertyFilters", () => {
 
   test("submits filters correctly", () => {
     const mockSearch = vi.fn();
-    const { container } = render(<PropertyFilters onSearch={mockSearch} />);
+
+    const { container } = render(
+      <PropertyFilters onSearch={mockSearch} />
+    );
 
     const cityInput = container.querySelector('input[name="city"]');
-    const minPriceInput = container.querySelector('input[name="minPrice"]');
-    const maxPriceInput = container.querySelector('input[name="maxPrice"]');
+    const minPriceInput = container.querySelector(
+      'input[name="minPrice"]'
+    );
+    const maxPriceInput = container.querySelector(
+      'input[name="maxPrice"]'
+    );
 
     fireEvent.change(cityInput, {
       target: { value: "Los Angeles" },
@@ -39,7 +46,9 @@ describe("PropertyFilters", () => {
       target: { value: "3000000" },
     });
 
-    fireEvent.click(container.querySelector('button[type="submit"]'));
+    fireEvent.click(
+      container.querySelector('button[type="submit"]')
+    );
 
     expect(mockSearch).toHaveBeenCalledWith({
       city: "Los Angeles",
@@ -48,21 +57,83 @@ describe("PropertyFilters", () => {
     });
   });
 
-  test("clears filters and reloads all properties", () => {
+  test("keeps filter values after searching", () => {
     const mockSearch = vi.fn();
-    const { container } = render(<PropertyFilters onSearch={mockSearch} />);
+
+    const { container } = render(
+      <PropertyFilters onSearch={mockSearch} />
+    );
 
     const cityInput = container.querySelector('input[name="city"]');
+    const minPriceInput = container.querySelector(
+      'input[name="minPrice"]'
+    );
+    const bedsSelect = container.querySelector('select[name="beds"]');
 
     fireEvent.change(cityInput, {
       target: { value: "Los Angeles" },
     });
 
-    expect(cityInput.value).toBe("Los Angeles");
+    fireEvent.change(minPriceInput, {
+      target: { value: "1000000" },
+    });
 
-    fireEvent.click(container.querySelector('button[type="button"]'));
+    fireEvent.change(bedsSelect, {
+      target: { value: "3" },
+    });
+
+    fireEvent.click(
+      container.querySelector('button[type="submit"]')
+    );
+
+    expect(mockSearch).toHaveBeenCalledWith({
+      city: "Los Angeles",
+      minPrice: "1000000",
+      beds: "3",
+    });
+
+    expect(cityInput.value).toBe("Los Angeles");
+    expect(minPriceInput.value).toBe("1000000");
+    expect(bedsSelect.value).toBe("3");
+  });
+
+  test("clears filters and reloads all properties", () => {
+    const mockSearch = vi.fn();
+
+    const { container } = render(
+      <PropertyFilters onSearch={mockSearch} />
+    );
+
+    const cityInput = container.querySelector('input[name="city"]');
+    const minPriceInput = container.querySelector(
+      'input[name="minPrice"]'
+    );
+    const bedsSelect = container.querySelector('select[name="beds"]');
+
+    fireEvent.change(cityInput, {
+      target: { value: "Los Angeles" },
+    });
+
+    fireEvent.change(minPriceInput, {
+      target: { value: "1000000" },
+    });
+
+    fireEvent.change(bedsSelect, {
+      target: { value: "3" },
+    });
+
+    expect(cityInput.value).toBe("Los Angeles");
+    expect(minPriceInput.value).toBe("1000000");
+    expect(bedsSelect.value).toBe("3");
+
+    fireEvent.click(
+      container.querySelector('button[type="button"]')
+    );
 
     expect(cityInput.value).toBe("");
+    expect(minPriceInput.value).toBe("");
+    expect(bedsSelect.value).toBe("");
+
     expect(mockSearch).toHaveBeenCalledWith({});
   });
 });

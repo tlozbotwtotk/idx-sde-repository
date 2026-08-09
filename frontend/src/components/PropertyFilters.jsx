@@ -1,14 +1,55 @@
 import React, { useState } from "react";
 
+const INITIAL_FILTERS = {
+  city: "",
+  zipcode: "",
+  minPrice: "",
+  maxPrice: "",
+  beds: "",
+  baths: "",
+};
+
+const FILTER_ROWS = [
+  {
+    key: "city",
+    label: "City",
+    type: "text",
+    placeholder: "Enter city",
+  },
+  {
+    key: "zipcode",
+    label: "ZIP Code",
+    type: "text",
+    placeholder: "Enter ZIP",
+  },
+  {
+    key: "minPrice",
+    label: "Min Price",
+    type: "number",
+    placeholder: "Minimum price",
+  },
+  {
+    key: "maxPrice",
+    label: "Max Price",
+    type: "number",
+    placeholder: "Maximum price",
+  },
+  {
+    key: "beds",
+    label: "Beds",
+    type: "select",
+    options: ["1", "2", "3", "4", "5"],
+  },
+  {
+    key: "baths",
+    label: "Baths",
+    type: "select",
+    options: ["1", "2", "3", "4"],
+  },
+];
+
 function PropertyFilters({ onSearch }) {
-  const [filters, setFilters] = useState({
-    city: "",
-    zipcode: "",
-    minPrice: "",
-    maxPrice: "",
-    beds: "",
-    baths: "",
-  });
+  const [filters, setFilters] = useState(INITIAL_FILTERS);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -22,7 +63,6 @@ function PropertyFilters({ onSearch }) {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Remove empty filter values before sending to API
     const cleanFilters = {};
 
     Object.entries(filters).forEach(([key, value]) => {
@@ -35,111 +75,123 @@ function PropertyFilters({ onSearch }) {
   };
 
   const handleClear = () => {
-    const resetFilters = {
-      city: "",
-      zipcode: "",
-      minPrice: "",
-      maxPrice: "",
-      beds: "",
-      baths: "",
-    };
-
-    setFilters(resetFilters);
-
-    // Reload all properties
+    setFilters(INITIAL_FILTERS);
     onSearch({});
   };
 
+  const boxStyle = {
+    width: "420px",
+    boxSizing: "border-box",
+    border: "1px solid #ddd",
+    borderRadius: "8px",
+    padding: "20px",
+    backgroundColor: "#fff",
+  };
+
+  const rowContainerStyle = {
+    display: "flex",
+    flexDirection: "column",
+    gap: "11px",
+  };
+
+  const rowStyle = {
+    display: "grid",
+    gridTemplateColumns: "100px 1fr",
+    alignItems: "center",
+    gap: "10px",
+    minHeight: "32px",
+  };
+
+  const labelStyle = {
+    fontSize: "14px",
+    fontWeight: "500",
+  };
+
+  const inputStyle = {
+    width: "100%",
+    minWidth: 0,
+    boxSizing: "border-box",
+    padding: "7px 10px",
+    border: "1px solid #ddd",
+    borderRadius: "4px",
+    fontSize: "14px",
+    lineHeight: "18px",
+    backgroundColor: "#fff",
+  };
+
   return (
-    <form className="property-filters" onSubmit={handleSubmit}>
-      <div className="filter-row">
-
-        <div className="filter-group">
-          <label>City</label>
-          <input
-            type="text"
-            name="city"
-            value={filters.city}
-            onChange={handleChange}
-            placeholder="Enter city"
-          />
-        </div>
-
-        <div className="filter-group">
-          <label>ZIP Code</label>
-          <input
-            type="text"
-            name="zipcode"
-            value={filters.zipcode}
-            onChange={handleChange}
-            placeholder="Enter ZIP"
-          />
-        </div>
-
-        <div className="filter-group">
-          <label>Min Price</label>
-          <input
-            type="number"
-            name="minPrice"
-            value={filters.minPrice}
-            onChange={handleChange}
-            placeholder="Minimum price"
-          />
-        </div>
-
-        <div className="filter-group">
-          <label>Max Price</label>
-          <input
-            type="number"
-            name="maxPrice"
-            value={filters.maxPrice}
-            onChange={handleChange}
-            placeholder="Maximum price"
-          />
-        </div>
-
-        <div className="filter-group">
-          <label>Beds</label>
-          <select
-            name="beds"
-            value={filters.beds}
-            onChange={handleChange}
+    <form onSubmit={handleSubmit}>
+      {/* Filter Options */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          width: "100%",
+        }}
+      >
+        <div style={boxStyle}>
+          <h3
+            style={{
+              marginTop: 0,
+              marginBottom: "16px",
+              fontSize: "18px",
+            }}
           >
-            <option value="">Any</option>
-            <option value="1">1+</option>
-            <option value="2">2+</option>
-            <option value="3">3+</option>
-            <option value="4">4+</option>
-            <option value="5">5+</option>
-          </select>
-        </div>
+            Filter Options
+          </h3>
 
-        <div className="filter-group">
-          <label>Baths</label>
-          <select
-            name="baths"
-            value={filters.baths}
-            onChange={handleChange}
-          >
-            <option value="">Any</option>
-            <option value="1">1+</option>
-            <option value="2">2+</option>
-            <option value="3">3+</option>
-            <option value="4">4+</option>
-          </select>
-        </div>
+          <div style={rowContainerStyle}>
+            {FILTER_ROWS.map((filter) => (
+              <div key={filter.key} style={rowStyle}>
+                <label htmlFor={filter.key} style={labelStyle}>
+                  {filter.label}
+                </label>
 
+                {filter.type === "select" ? (
+                  <select
+                    id={filter.key}
+                    name={filter.key}
+                    value={filters[filter.key]}
+                    onChange={handleChange}
+                    style={inputStyle}
+                  >
+                    <option value="">Any</option>
+
+                    {filter.options.map((option) => (
+                      <option key={option} value={option}>
+                        {option}+
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    id={filter.key}
+                    type={filter.type}
+                    name={filter.key}
+                    value={filters[filter.key]}
+                    onChange={handleChange}
+                    placeholder={filter.placeholder}
+                    style={inputStyle}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
-      <div className="filter-actions">
-        <button type="submit">
-          Search
-        </button>
+      {/* Buttons */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          gap: "24px",
+          marginTop: "16px",
+        }}
+      >
+        <button type="submit">Search</button>
 
-        <button
-          type="button"
-          onClick={handleClear}
-        >
+        <button type="button" onClick={handleClear}>
           Clear Filters
         </button>
       </div>
