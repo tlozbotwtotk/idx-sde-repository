@@ -33,3 +33,6 @@ A React frontend app that fetches the backend info and displays it on the variou
 
 ### Week 6: Filters and Testing Intro
 The frontend app now includes filters and unit tests are introduced
+
+### Week 7: Pagination and Complex Testing
+The frontend app now includes pagination at the bottom and more complex test cases
