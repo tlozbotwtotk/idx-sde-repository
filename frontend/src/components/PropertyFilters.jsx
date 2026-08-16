@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const INITIAL_FILTERS = {
   city: "",
@@ -48,8 +48,21 @@ const FILTER_ROWS = [
   },
 ];
 
-function PropertyFilters({ onSearch }) {
-  const [filters, setFilters] = useState(INITIAL_FILTERS);
+function PropertyFilters({
+  onSearch,
+  savedFilters = {},
+}) {
+  const [filters, setFilters] = useState({
+    ...INITIAL_FILTERS,
+    ...savedFilters,
+  });
+
+  useEffect(() => {
+    setFilters({
+      ...INITIAL_FILTERS,
+      ...savedFilters,
+    });
+  }, [savedFilters]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -65,11 +78,16 @@ function PropertyFilters({ onSearch }) {
 
     const cleanFilters = {};
 
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value.trim() !== "") {
-        cleanFilters[key] = value.trim();
+    Object.entries(filters).forEach(
+      ([key, value]) => {
+        if (
+          typeof value === "string" &&
+          value.trim() !== ""
+        ) {
+          cleanFilters[key] = value.trim();
+        }
       }
-    });
+    );
 
     onSearch(cleanFilters);
   };
@@ -121,7 +139,6 @@ function PropertyFilters({ onSearch }) {
 
   return (
     <form onSubmit={handleSubmit}>
-      {/* Filter Options */}
       <div
         style={{
           display: "flex",
@@ -142,8 +159,14 @@ function PropertyFilters({ onSearch }) {
 
           <div style={rowContainerStyle}>
             {FILTER_ROWS.map((filter) => (
-              <div key={filter.key} style={rowStyle}>
-                <label htmlFor={filter.key} style={labelStyle}>
+              <div
+                key={filter.key}
+                style={rowStyle}
+              >
+                <label
+                  htmlFor={filter.key}
+                  style={labelStyle}
+                >
                   {filter.label}
                 </label>
 
@@ -157,11 +180,16 @@ function PropertyFilters({ onSearch }) {
                   >
                     <option value="">Any</option>
 
-                    {filter.options.map((option) => (
-                      <option key={option} value={option}>
-                        {option}+
-                      </option>
-                    ))}
+                    {filter.options.map(
+                      (option) => (
+                        <option
+                          key={option}
+                          value={option}
+                        >
+                          {option}+
+                        </option>
+                      )
+                    )}
                   </select>
                 ) : (
                   <input
@@ -170,7 +198,9 @@ function PropertyFilters({ onSearch }) {
                     name={filter.key}
                     value={filters[filter.key]}
                     onChange={handleChange}
-                    placeholder={filter.placeholder}
+                    placeholder={
+                      filter.placeholder
+                    }
                     style={inputStyle}
                   />
                 )}
@@ -180,7 +210,6 @@ function PropertyFilters({ onSearch }) {
         </div>
       </div>
 
-      {/* Buttons */}
       <div
         style={{
           display: "flex",
@@ -189,9 +218,14 @@ function PropertyFilters({ onSearch }) {
           marginTop: "16px",
         }}
       >
-        <button type="submit">Search</button>
+        <button type="submit">
+          Search
+        </button>
 
-        <button type="button" onClick={handleClear}>
+        <button
+          type="button"
+          onClick={handleClear}
+        >
           Clear Filters
         </button>
       </div>

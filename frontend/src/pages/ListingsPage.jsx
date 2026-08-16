@@ -1,16 +1,45 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { fetchProperties } from "../api/client";
 import PropertyFilters from "../components/PropertyFilters";
 import Pagination from "../components/Pagination";
+import PropertyImageCarousel from "../components/PropertyImageCarousel";
 import "../App.css";
+
+const SAVED_FILTERS_KEY = "propertyListingFilters";
+const SAVED_PAGE_KEY = "propertyListingCurrentPage";
 
 function ListingsPage() {
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [total, setTotal] = useState(0);
-  const [filters, setFilters] = useState({});
-  const [currentPage, setCurrentPage] = useState(1);
+
+  const [filters, setFilters] = useState(() => {
+    try {
+      const savedFilters = sessionStorage.getItem(
+        SAVED_FILTERS_KEY
+      );
+
+      return savedFilters
+        ? JSON.parse(savedFilters)
+        : {};
+    } catch (error) {
+      console.error("Failed to load saved filters:", error);
+      return {};
+    }
+  });
+
+  const [currentPage, setCurrentPage] = useState(() => {
+    try {
+      const savedPage = sessionStorage.getItem(SAVED_PAGE_KEY);
+      return savedPage ? Number(savedPage) : 1;
+    } catch (error) {
+      console.error("Failed to load saved page:", error);
+      return 1;
+    }
+  });
+
   const [itemsPerPage] = useState(20);
 
   const totalPages = Math.ceil(total / itemsPerPage);
@@ -24,7 +53,8 @@ function ListingsPage() {
       setLoading(true);
       setError(null);
 
-      const offset = (currentPage - 1) * itemsPerPage;
+      const offset =
+        (currentPage - 1) * itemsPerPage;
 
       const data = await fetchProperties({
         ...filters,
@@ -36,7 +66,9 @@ function ListingsPage() {
       setTotal(data.total);
     } catch (err) {
       console.error(err);
-      setError("Failed to load properties. Please try again.");
+      setError(
+        "Failed to load properties. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -45,17 +77,29 @@ function ListingsPage() {
   function handleSearch(newFilters) {
     setFilters(newFilters);
     setCurrentPage(1);
+
+    sessionStorage.setItem(
+      SAVED_FILTERS_KEY,
+      JSON.stringify(newFilters)
+    );
+    sessionStorage.setItem(SAVED_PAGE_KEY, "1");
   }
 
   function handlePageChange(newPage) {
     setCurrentPage(newPage);
+    sessionStorage.setItem(SAVED_PAGE_KEY, String(newPage));
     window.scrollTo(0, 0);
   }
 
   const startResult =
-    total === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
+    total === 0
+      ? 0
+      : (currentPage - 1) * itemsPerPage + 1;
 
-  const endResult = Math.min(currentPage * itemsPerPage, total);
+  const endResult = Math.min(
+    currentPage * itemsPerPage,
+    total
+  );
 
   return (
     <div>
@@ -63,6 +107,7 @@ function ListingsPage() {
 
       <PropertyFilters
         onSearch={handleSearch}
+        savedFilters={filters}
       />
 
       {loading ? (
@@ -72,12 +117,14 @@ function ListingsPage() {
       ) : (
         <>
           <p>
-            Showing {startResult}-{endResult} of {total} properties
+            Showing {startResult}-{endResult} of {total}{" "}
+            properties
           </p>
 
           {properties.length === 0 ? (
             <div className="no-results">
-              No properties found. Try adjusting your filters.
+              No properties found. Try adjusting your
+              filters.
             </div>
           ) : (
             <>
@@ -104,25 +151,28 @@ function ListingsPage() {
 }
 
 function PropertyCard({ property }) {
-  const photo = getFirstPhoto(property.L_Photos);
+  const navigate = useNavigate();
+
+  function handleClick() {
+    navigate(
+      `/property/${property.L_ListingID}`
+    );
+  }
 
   return (
-    <div className="property-card">
-      {photo ? (
-        <img
-          src={photo}
-          alt={property.L_Address}
-          className="property-image"
-        />
-      ) : (
-        <div className="property-image-placeholder">
-          No image available
-        </div>
-      )}
+    <div
+      className="property-card"
+      onClick={handleClick}
+    >
+      <PropertyImageCarousel
+        photoData={property.L_Photos}
+        alt={property.L_Address}
+      />
 
       <div className="property-info">
         <div className="price">
-          ${property.L_SystemPrice?.toLocaleString()}
+          $
+          {property.L_SystemPrice?.toLocaleString()}
         </div>
 
         <div className="address">
@@ -134,11 +184,15 @@ function PropertyCard({ property }) {
         </div>
 
         <div className="property-details">
-          <span>{property.L_Keyword2} beds</span>
+          <span>
+            {property.L_Keyword2} beds
+          </span>
 
           <span>•</span>
 
-          <span>{property.LM_Dec_3} baths</span>
+          <span>
+            {property.LM_Dec_3} baths
+          </span>
 
           <span>•</span>
 
@@ -149,25 +203,6 @@ function PropertyCard({ property }) {
       </div>
     </div>
   );
-}
-
-function getFirstPhoto(photoData) {
-  if (!photoData) {
-    return null;
-  }
-
-  try {
-    const photos = JSON.parse(photoData);
-
-    if (Array.isArray(photos) && photos.length > 0) {
-      return photos[0];
-    }
-
-    return null;
-  } catch (error) {
-    console.error("Invalid L_Photos JSON:", error);
-    return null;
-  }
 }
 
 export default ListingsPage;
