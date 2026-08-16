@@ -36,3 +36,6 @@ The frontend app now includes filters and unit tests are introduced
 
 ### Week 7: Pagination and Complex Testing
 The frontend app now includes pagination at the bottom and more complex test cases
+
+### Week 8: Property Detail Page
+The frontend app now includes an image carousel and a property detail page for each property card; within the property detail page is various information, along with a photo gallery, map, and open houses.
