@@ -39,3 +39,6 @@ The frontend app now includes pagination at the bottom and more complex test cas
 
 ### Week 8: Property Detail Page
 The frontend app now includes an image carousel and a property detail page for each property card; within the property detail page is various information, along with a photo gallery, map, and open houses.
+
+### Week 9: Advanced Feature 3 and Performance Optimization
+The frontend app now implements advanced feature 3: sorting and favorites; furthermore, the application has more code and data optimizations.
