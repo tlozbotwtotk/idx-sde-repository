@@ -116,7 +116,9 @@ router.get("/", async (req, res) => {
       minPrice,
       maxPrice,
       beds,
-      baths
+      baths,
+      sortBy,
+      sortOrder
     } = req.query;
 
     if (minPrice && isNaN(minPrice)) {
@@ -193,6 +195,33 @@ router.get("/", async (req, res) => {
         ? "WHERE " + conditions.join(" AND ")
         : "";
 
+    // Sorting implementation with strict validation whitelist & tiebreaker
+    let orderClause = "";
+    const validSortFields = [
+      "L_SystemPrice",
+      "ListingContractDate",
+      "LM_Int2_3",
+      "L_Keyword2",
+      "LM_Dec_3"
+    ];
+    const validOrders = ["ASC", "DESC"];
+
+    if (sortBy) {
+      if (!validSortFields.includes(sortBy)) {
+        return res.status(400).json({
+          error: "Invalid sortBy field"
+        });
+      }
+
+      const order = validOrders.includes(sortOrder?.toUpperCase())
+        ? sortOrder.toUpperCase()
+        : "ASC";
+
+      orderClause = `ORDER BY ${sortBy} ${order}, L_ListingID ASC`;
+    } else {
+      orderClause = `ORDER BY L_ListingID ASC`;
+    }
+
     const countQuery = `
       SELECT COUNT(*) as total
       FROM rets_property
@@ -207,6 +236,7 @@ router.get("/", async (req, res) => {
       SELECT *
       FROM rets_property
       ${whereClause}
+      ${orderClause}
       LIMIT ?
       OFFSET ?
     `;

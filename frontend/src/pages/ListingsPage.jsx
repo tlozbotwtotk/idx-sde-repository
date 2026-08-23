@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchProperties } from "../api/client";
+import { useFavorites } from "../hooks/useFavorites";
 import PropertyFilters from "../components/PropertyFilters";
 import Pagination from "../components/Pagination";
 import PropertyImageCarousel from "../components/PropertyImageCarousel";
@@ -8,22 +9,22 @@ import "../App.css";
 
 const SAVED_FILTERS_KEY = "propertyListingFilters";
 const SAVED_PAGE_KEY = "propertyListingCurrentPage";
+const SAVED_SORT_BY_KEY = "propertyListingSortBy";
+const SAVED_SORT_ORDER_KEY = "propertyListingSortOrder";
 
 function ListingsPage() {
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [total, setTotal] = useState(0);
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+
+  const { favorites, isFavorite, toggleFavorite, favoritesCount } = useFavorites();
 
   const [filters, setFilters] = useState(() => {
     try {
-      const savedFilters = sessionStorage.getItem(
-        SAVED_FILTERS_KEY
-      );
-
-      return savedFilters
-        ? JSON.parse(savedFilters)
-        : {};
+      const savedFilters = sessionStorage.getItem(SAVED_FILTERS_KEY);
+      return savedFilters ? JSON.parse(savedFilters) : {};
     } catch (error) {
       console.error("Failed to load saved filters:", error);
       return {};
@@ -40,49 +41,74 @@ function ListingsPage() {
     }
   });
 
+  const [sortBy, setSortBy] = useState(() => {
+    try {
+      return sessionStorage.getItem(SAVED_SORT_BY_KEY) || "";
+    } catch (error) {
+      return "";
+    }
+  });
+
+  const [sortOrder, setSortOrder] = useState(() => {
+    try {
+      return sessionStorage.getItem(SAVED_SORT_ORDER_KEY) || "ASC";
+    } catch (error) {
+      return "ASC";
+    }
+  });
+
   const [itemsPerPage] = useState(20);
 
-  const totalPages = Math.ceil(total / itemsPerPage);
+  const displayedProperties = showFavoritesOnly ? favorites : properties;
+  const totalPages = showFavoritesOnly ? 1 : Math.ceil(total / itemsPerPage);
 
   useEffect(() => {
-    loadProperties();
-  }, [filters, currentPage]);
+    if (!showFavoritesOnly) {
+      loadProperties();
+    }
+  }, [filters, currentPage, sortBy, sortOrder, showFavoritesOnly]);
 
   async function loadProperties() {
     try {
       setLoading(true);
       setError(null);
 
-      const offset =
-        (currentPage - 1) * itemsPerPage;
+      const offset = (currentPage - 1) * itemsPerPage;
 
-      const data = await fetchProperties({
+      const queryParams = {
         ...filters,
         limit: itemsPerPage,
         offset: offset,
-      });
+      };
+
+      if (sortBy) {
+        queryParams.sortBy = sortBy;
+        queryParams.sortOrder = sortOrder;
+      }
+
+      const data = await fetchProperties(queryParams);
 
       setProperties(data.results);
       setTotal(data.total);
     } catch (err) {
       console.error(err);
-      setError(
-        "Failed to load properties. Please try again."
-      );
+      setError("Failed to load properties. Please try again.");
     } finally {
       setLoading(false);
     }
   }
 
   function handleSearch(newFilters) {
+    setShowFavoritesOnly(false);
     setFilters(newFilters);
     setCurrentPage(1);
+    setSortBy("");
+    setSortOrder("ASC");
 
-    sessionStorage.setItem(
-      SAVED_FILTERS_KEY,
-      JSON.stringify(newFilters)
-    );
+    sessionStorage.setItem(SAVED_FILTERS_KEY, JSON.stringify(newFilters));
     sessionStorage.setItem(SAVED_PAGE_KEY, "1");
+    sessionStorage.removeItem(SAVED_SORT_BY_KEY);
+    sessionStorage.setItem(SAVED_SORT_ORDER_KEY, "ASC");
   }
 
   function handlePageChange(newPage) {
@@ -91,57 +117,126 @@ function ListingsPage() {
     window.scrollTo(0, 0);
   }
 
-  const startResult =
-    total === 0
-      ? 0
-      : (currentPage - 1) * itemsPerPage + 1;
+  function handleSortByChange(e) {
+    const value = e.target.value;
+    setSortBy(value);
+    setCurrentPage(1);
+    sessionStorage.setItem(SAVED_SORT_BY_KEY, value);
+    sessionStorage.setItem(SAVED_PAGE_KEY, "1");
+    if (value) {
+      sessionStorage.setItem(SAVED_SORT_ORDER_KEY, sortOrder);
+    } else {
+      sessionStorage.removeItem(SAVED_SORT_BY_KEY);
+    }
+  }
 
-  const endResult = Math.min(
-    currentPage * itemsPerPage,
-    total
-  );
+  function handleSortOrderChange(e) {
+    const value = e.target.value;
+    setSortOrder(value);
+    setCurrentPage(1);
+    sessionStorage.setItem(SAVED_SORT_ORDER_KEY, value);
+    sessionStorage.setItem(SAVED_PAGE_KEY, "1");
+  }
+
+  const startResult = total === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
+  const endResult = Math.min(currentPage * itemsPerPage, total);
+
+  const isDateSort = sortBy === "ListingContractDate";
+  const ascLabel = isDateSort ? "Oldest" : "Ascending";
+  const descLabel = isDateSort ? "Newest" : "Descending";
 
   return (
     <div>
-      <h1>Property Listings</h1>
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "10px" }}>
+        <button 
+          onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+          style={{ 
+            cursor: "pointer", 
+            background: showFavoritesOnly ? "#27ae60" : "#3498db", 
+            color: "white", 
+            padding: "8px 16px", 
+            borderRadius: "4px",
+            border: "none",
+            fontWeight: "bold"
+          }}
+        >
+          {showFavoritesOnly ? "Show All Listings" : `❤️ Favorites (${favoritesCount})`}
+        </button>
+      </div>
 
-      <PropertyFilters
-        onSearch={handleSearch}
-        savedFilters={filters}
-      />
+      <h1>{showFavoritesOnly ? "My Favorite Properties" : "Property Listings"}</h1>
 
-      {loading ? (
+      {!showFavoritesOnly && (
+        <>
+          <PropertyFilters
+            onSearch={handleSearch}
+            savedFilters={filters}
+          />
+
+          <div className="sort-controls" style={{ margin: "20px 0", display: "flex", justifyContent: "center", gap: "15px", alignItems: "center" }}>
+            <label>
+              Sort by:{" "}
+              <select id="sort-by-select" name="sortBy" value={sortBy} onChange={handleSortByChange}>
+                <option value="">Default</option>
+                <option value="L_SystemPrice">Price</option>
+                <option value="ListingContractDate">Date Listed</option>
+                <option value="LM_Int2_3">Size (SqFt)</option>
+                <option value="L_Keyword2">Bedrooms</option>
+                <option value="LM_Dec_3">Bathrooms</option>
+              </select>
+            </label>
+
+            {sortBy && (
+              <label>
+                Order:{" "}
+                <select id="sort-order-select" name="sortOrder" value={sortOrder} onChange={handleSortOrderChange}>
+                  <option value="ASC">{ascLabel}</option>
+                  <option value="DESC">{descLabel}</option>
+                </select>
+              </label>
+            )}
+          </div>
+        </>
+      )}
+
+      {loading && !showFavoritesOnly ? (
         <div>Loading properties...</div>
-      ) : error ? (
+      ) : error && !showFavoritesOnly ? (
         <div>{error}</div>
       ) : (
         <>
-          <p>
-            Showing {startResult}-{endResult} of {total}{" "}
-            properties
-          </p>
+          {!showFavoritesOnly && (
+            <p>
+              Showing {startResult}-{endResult} of {total} properties
+            </p>
+          )}
 
-          {properties.length === 0 ? (
+          {displayedProperties.length === 0 ? (
             <div className="no-results">
-              No properties found. Try adjusting your
-              filters.
+              {showFavoritesOnly 
+                ? "You haven't saved any favorite properties yet." 
+                : "No properties found. Try adjusting your filters."}
             </div>
           ) : (
             <>
               <div className="property-grid">
-                {properties.map((property) => (
+                {displayedProperties.map((property) => (
                   <PropertyCard
                     key={property.L_ListingID}
                     property={property}
+                    isFavorite={isFavorite}
+                    onToggleFavorite={toggleFavorite}
                   />
                 ))}
               </div>
 
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={handlePageChange}
-              />
+              {!showFavoritesOnly && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                />
+              )}
             </>
           )}
         </>
@@ -150,20 +245,45 @@ function ListingsPage() {
   );
 }
 
-function PropertyCard({ property }) {
+function PropertyCard({ property, isFavorite, onToggleFavorite }) {
   const navigate = useNavigate();
+  const favorite = isFavorite(property.L_ListingID);
 
   function handleClick() {
-    navigate(
-      `/property/${property.L_ListingID}`
-    );
+    navigate(`/property/${property.L_ListingID}`);
+  }
+
+  function handleHeartClick(e) {
+    e.stopPropagation();
+    onToggleFavorite(property);
   }
 
   return (
-    <div
-      className="property-card"
-      onClick={handleClick}
-    >
+    <div className="property-card" onClick={handleClick} style={{ position: "relative", cursor: "pointer" }}>
+      <button 
+        onClick={handleHeartClick}
+        aria-label="Save to favorites"
+        style={{
+          position: "absolute",
+          top: "10px",
+          right: "10px",
+          background: "white",
+          border: "none",
+          borderRadius: "50%",
+          width: "35px",
+          height: "35px",
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
+          zIndex: 2,
+          fontSize: "18px"
+        }}
+      >
+        {favorite ? "❤️" : "🤍"}
+      </button>
+
       <PropertyImageCarousel
         photoData={property.L_Photos}
         alt={property.L_Address}
@@ -171,8 +291,7 @@ function PropertyCard({ property }) {
 
       <div className="property-info">
         <div className="price">
-          $
-          {property.L_SystemPrice?.toLocaleString()}
+          ${property.L_SystemPrice?.toLocaleString()}
         </div>
 
         <div className="address">
@@ -184,21 +303,11 @@ function PropertyCard({ property }) {
         </div>
 
         <div className="property-details">
-          <span>
-            {property.L_Keyword2} beds
-          </span>
-
+          <span>{property.L_Keyword2} beds</span>
           <span>•</span>
-
-          <span>
-            {property.LM_Dec_3} baths
-          </span>
-
+          <span>{property.LM_Dec_3} baths</span>
           <span>•</span>
-
-          <span>
-            {property.LM_Int2_3?.toLocaleString()} sqft
-          </span>
+          <span>{property.LM_Int2_3?.toLocaleString()} sqft</span>
         </div>
       </div>
     </div>
