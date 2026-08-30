@@ -195,7 +195,6 @@ router.get("/", async (req, res) => {
         ? "WHERE " + conditions.join(" AND ")
         : "";
 
-    // Sorting implementation with strict validation whitelist & tiebreaker
     let orderClause = "";
     const validSortFields = [
       "L_SystemPrice",

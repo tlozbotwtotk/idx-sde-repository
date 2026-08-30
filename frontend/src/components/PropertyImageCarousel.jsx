@@ -1,12 +1,11 @@
-import React, { useState, useEffect, useRef } from "react"; // <-- NEW: import useRef
+import React, { useState, useEffect, useRef } from "react";
 
 function PropertyImageCarousel({ photoData, alt = "Property" }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [imageError, setImageError] = useState(false);
   const [loading, setLoading] = useState(true);
-  const imgRef = useRef(null); // <-- NEW: create the ref
+  const imgRef = useRef(null);
 
-  // Safely parse photos whether passed as a JSON string or an array
   let photos = [];
   if (photoData) {
     if (Array.isArray(photoData)) {
@@ -23,12 +22,10 @@ function PropertyImageCarousel({ photoData, alt = "Property" }) {
     }
   }
 
-  // Reset error and loading state whenever the active photo index changes
   useEffect(() => {
     setImageError(false);
     setLoading(true);
 
-    // <-- NEW: If the browser already has this cached, clear loading instantly!
     if (imgRef.current && imgRef.current.complete) {
       setLoading(false);
     }
@@ -84,7 +81,7 @@ function PropertyImageCarousel({ photoData, alt = "Property" }) {
       ) : (
         <div style={imageAreaStyle}>
           <img
-            ref={imgRef} // <-- NEW: attach the ref here
+            ref={imgRef}
             key={currentPhoto}
             src={currentPhoto}
             alt={alt}
