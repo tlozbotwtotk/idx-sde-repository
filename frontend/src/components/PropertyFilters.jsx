@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 const INITIAL_FILTERS = {
   city: "",
@@ -58,10 +58,21 @@ function PropertyFilters({
   });
 
   useEffect(() => {
-    setFilters({
-      ...INITIAL_FILTERS,
-      ...savedFilters,
-    });
+    let isMounted = true;
+
+    const timer = setTimeout(() => {
+      if (isMounted) {
+        setFilters({
+          ...INITIAL_FILTERS,
+          ...savedFilters,
+        });
+      }
+    }, 0);
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timer);
+    };
   }, [savedFilters]);
 
   const handleChange = (e) => {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 function PropertyImageGallery({ photoData, alt = "Property" }) {
   const [currentIndex, setCurrentIndex] = useState(0);

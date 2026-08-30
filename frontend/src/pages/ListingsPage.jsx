@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState, useCallback } from "react";
 import { fetchProperties } from "../api/client";
 import { useFavorites } from "../hooks/useFavorites";
 import PropertyFilters from "../components/PropertyFilters";
@@ -25,8 +24,8 @@ function ListingsPage() {
     try {
       const savedFilters = sessionStorage.getItem(SAVED_FILTERS_KEY);
       return savedFilters ? JSON.parse(savedFilters) : {};
-    } catch (error) {
-      console.error("Failed to load saved filters:", error);
+    } catch {
+      console.error("Failed to load saved filters");
       return {};
     }
   });
@@ -35,8 +34,8 @@ function ListingsPage() {
     try {
       const savedPage = sessionStorage.getItem(SAVED_PAGE_KEY);
       return savedPage ? Number(savedPage) : 1;
-    } catch (error) {
-      console.error("Failed to load saved page:", error);
+    } catch {
+      console.error("Failed to load saved page");
       return 1;
     }
   });
@@ -44,7 +43,7 @@ function ListingsPage() {
   const [sortBy, setSortBy] = useState(() => {
     try {
       return sessionStorage.getItem(SAVED_SORT_BY_KEY) || "";
-    } catch (error) {
+    } catch {
       return "";
     }
   });
@@ -52,7 +51,7 @@ function ListingsPage() {
   const [sortOrder, setSortOrder] = useState(() => {
     try {
       return sessionStorage.getItem(SAVED_SORT_ORDER_KEY) || "ASC";
-    } catch (error) {
+    } catch {
       return "ASC";
     }
   });
@@ -62,13 +61,7 @@ function ListingsPage() {
   const displayedProperties = showFavoritesOnly ? favorites : properties;
   const totalPages = showFavoritesOnly ? 1 : Math.ceil(total / itemsPerPage);
 
-  useEffect(() => {
-    if (!showFavoritesOnly) {
-      loadProperties();
-    }
-  }, [filters, currentPage, sortBy, sortOrder, showFavoritesOnly]);
-
-  async function loadProperties() {
+  const loadProperties = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -96,7 +89,24 @@ function ListingsPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [filters, currentPage, sortBy, sortOrder, itemsPerPage]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    if (!showFavoritesOnly) {
+      const timer = setTimeout(() => {
+        if (isMounted) {
+          loadProperties();
+        }
+      }, 0);
+
+      return () => {
+        isMounted = false;
+        clearTimeout(timer);
+      };
+    }
+  }, [loadProperties, showFavoritesOnly]);
 
   function handleSearch(newFilters) {
     setShowFavoritesOnly(false);

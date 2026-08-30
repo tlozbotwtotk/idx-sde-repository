@@ -1,5 +1,3 @@
-import React from "react";
-
 function PropertyMap({ latitude, longitude }) {
   if (
     latitude == null ||

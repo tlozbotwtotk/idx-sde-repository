@@ -1,11 +1,11 @@
 import { describe, test, expect, beforeEach, vi } from "vitest";
 import { fetchProperties } from "./client";
 
-global.fetch = vi.fn();
+vi.stubGlobal("fetch", vi.fn());
 
 describe("fetchProperties", () => {
   beforeEach(() => {
-    fetch.mockClear();
+    vi.mocked(fetch).mockClear();
   });
 
   test("fetches properties successfully", async () => {
@@ -20,7 +20,7 @@ describe("fetchProperties", () => {
       ],
     };
 
-    fetch.mockResolvedValueOnce({
+    vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
       json: async () => mockData,
     });
@@ -38,9 +38,8 @@ describe("fetchProperties", () => {
     expect(data).toEqual(mockData);
   });
 
-
   test("throws error when API request fails", async () => {
-    fetch.mockResolvedValueOnce({
+    vi.mocked(fetch).mockResolvedValueOnce({
       ok: false,
       status: 500,
       statusText: "Internal Server Error",
@@ -51,9 +50,8 @@ describe("fetchProperties", () => {
     );
   });
 
-
   test("builds query string with multiple filters", async () => {
-    fetch.mockResolvedValueOnce({
+    vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
       json: async () => ({
         results: [],
@@ -66,7 +64,7 @@ describe("fetchProperties", () => {
       maxPrice: 3000000,
     });
 
-    const calledUrl = fetch.mock.calls[0][0];
+    const calledUrl = vi.mocked(fetch).mock.calls[0][0];
 
     expect(calledUrl).toContain("city=Los+Angeles");
     expect(calledUrl).toContain("minPrice=1000000");

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 
 function PropertyImageCarousel({ photoData, alt = "Property" }) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -22,17 +22,10 @@ function PropertyImageCarousel({ photoData, alt = "Property" }) {
     }
   }
 
-  useEffect(() => {
-    setImageError(false);
-    setLoading(true);
-
-    if (imgRef.current && imgRef.current.complete) {
-      setLoading(false);
-    }
-  }, [currentIndex]);
-
   function handlePrevious(event) {
     event.stopPropagation();
+    setImageError(false);
+    setLoading(true);
     setCurrentIndex((previousIndex) =>
       previousIndex === 0 ? photos.length - 1 : previousIndex - 1
     );
@@ -40,6 +33,8 @@ function PropertyImageCarousel({ photoData, alt = "Property" }) {
 
   function handleNext(event) {
     event.stopPropagation();
+    setImageError(false);
+    setLoading(true);
     setCurrentIndex((previousIndex) =>
       previousIndex === photos.length - 1 ? 0 : previousIndex + 1
     );
