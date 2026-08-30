@@ -42,3 +42,6 @@ The frontend app now includes an image carousel and a property detail page for e
 
 ### Week 9: Advanced Feature 3 and Performance Optimization
 The frontend app now implements advanced feature 3: sorting and favorites; furthermore, the application has more code and data optimizations.
+
+### Week 10: Git Workflow and Code Organizing
+The github repository is updated to have proper branch and code organization.
