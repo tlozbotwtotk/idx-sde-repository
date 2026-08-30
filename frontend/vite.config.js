@@ -8,6 +8,10 @@ export default defineConfig({
     environment: "jsdom",
   },
 
+  optimizeDeps: {
+    include: ['prop-types'],
+  },
+
   server: {
     port: 3000,
     proxy: {
