@@ -6,6 +6,8 @@ function PropertyImageCarousel({ photoData, alt = "Property" }) {
   const [loading, setLoading] = useState(true);
   const imgRef = useRef(null);
 
+  // --- PHOTO DATA NORMALIZATION ---
+  // Parse and sanitize photoData whether it arrives as an array or a JSON string
   let photos = [];
   if (photoData) {
     if (Array.isArray(photoData)) {
@@ -22,6 +24,8 @@ function PropertyImageCarousel({ photoData, alt = "Property" }) {
     }
   }
 
+  // --- CAROUSEL NAVIGATION HANDLERS ---
+  // Stop propagation to prevent triggering parent card clicks when navigating images
   function handlePrevious(event) {
     event.stopPropagation();
     setImageError(false);
@@ -96,6 +100,7 @@ function PropertyImageCarousel({ photoData, alt = "Property" }) {
             }}
           />
 
+          {/* --- LOADING OVERLAY --- */}
           {loading && (
             <div
               className="property-image-placeholder"
@@ -113,6 +118,7 @@ function PropertyImageCarousel({ photoData, alt = "Property" }) {
         </div>
       )}
 
+      {/* --- CONDITIONAL CONTROLS RENDER --- */}
       {photos.length > 1 && (
         <div
           className="carousel-controls"

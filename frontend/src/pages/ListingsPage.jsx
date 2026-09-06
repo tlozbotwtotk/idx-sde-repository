@@ -20,6 +20,8 @@ function ListingsPage() {
 
   const { favorites, isFavorite, toggleFavorite, favoritesCount } = useFavorites();
 
+  // --- SESSION STORAGE INITIALIZATION ---
+  // Lazy initialize filter state from sessionStorage with safe fallback on corruption/private mode
   const [filters, setFilters] = useState(() => {
     try {
       const savedFilters = sessionStorage.getItem(SAVED_FILTERS_KEY);
@@ -66,6 +68,8 @@ function ListingsPage() {
       setLoading(true);
       setError(null);
 
+      // --- PAGINATION MATH ---
+      // Compute database offset based on 1-indexed current page and page size
       const offset = (currentPage - 1) * itemsPerPage;
 
       const queryParams = {
@@ -148,9 +152,13 @@ function ListingsPage() {
     sessionStorage.setItem(SAVED_PAGE_KEY, "1");
   }
 
+  // --- RESULT WINDOW MATH ---
+  // Calculate display range (e.g., "Showing 1-20 of 45 properties")
   const startResult = total === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
   const endResult = Math.min(currentPage * itemsPerPage, total);
 
+  // --- CONTEXTUAL UI LABELS ---
+  // Switch sort direction labels depending on whether sorting by date or metrics
   const isDateSort = sortBy === "ListingContractDate";
   const ascLabel = isDateSort ? "Oldest" : "Ascending";
   const descLabel = isDateSort ? "Newest" : "Descending";

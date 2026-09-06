@@ -26,6 +26,8 @@ function Pagination({ currentPage, totalPages, onPageChange }) {
       );
     }
 
+    // --- PAGINATION MATH & ELLIPSIS GENERATION ---
+    // Seed core boundary pages and immediate neighbors around the current page into a Set to prevent duplicates
     const pages = new Set([
       1,
       totalPages,
@@ -40,6 +42,7 @@ function Pagination({ currentPage, totalPages, onPageChange }) {
       pages.add(currentPage + 1);
     }
 
+    // Sort numbers sequentially and insert string ellipses wherever page number gaps exceed 1
     const sortedPages = Array.from(pages).sort(
       (a, b) => a - b
     );
