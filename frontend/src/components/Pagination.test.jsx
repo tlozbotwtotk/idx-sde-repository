@@ -8,7 +8,7 @@ afterEach(() => {
 });
 
 describe("Pagination", () => {
-  test("handles the first page correctly", () => {
+  test("first page", () => {
     render(
       <Pagination
         currentPage={1}
@@ -30,7 +30,7 @@ describe("Pagination", () => {
     ).toHaveClass("active");
   });
 
-  test("handles the last page correctly", () => {
+  test("last page", () => {
     render(
       <Pagination
         currentPage={24}
@@ -52,7 +52,7 @@ describe("Pagination", () => {
     ).toHaveClass("active");
   });
 
-  test("handles a middle page correctly", () => {
+  test("middle page", () => {
     render(
       <Pagination
         currentPage={5}
@@ -82,7 +82,7 @@ describe("Pagination", () => {
     ).toBeInTheDocument();
   });
 
-  test("navigates when a page number is clicked", () => {
+  test("page number click", () => {
     const onPageChange = vi.fn();
 
     render(
@@ -100,7 +100,7 @@ describe("Pagination", () => {
     expect(onPageChange).toHaveBeenCalledWith(13);
   });
 
-  test("renders ellipses correctly without duplicating the last page", () => {
+  test("ellipsis rendering", () => {
     render(
       <Pagination
         currentPage={21}
@@ -117,5 +117,67 @@ describe("Pagination", () => {
     expect(page24Buttons).toHaveLength(1);
 
     expect(screen.getAllByText("...")).toHaveLength(2);
+  });
+
+  test("disabled states", () => {
+    const { rerender } = render(
+      <Pagination
+        currentPage={1}
+        totalPages={24}
+        onPageChange={vi.fn()}
+      />
+    );
+
+    expect(
+      screen.getByRole("button", { name: "← Previous", exact: true })
+    ).toBeDisabled();
+
+    rerender(
+      <Pagination
+        currentPage={24}
+        totalPages={24}
+        onPageChange={vi.fn()}
+      />
+    );
+
+    expect(
+      screen.getByRole("button", { name: "Next →", exact: true })
+    ).toBeDisabled();
+  });
+
+  test("page number clicks", () => {
+    const onPageChange = vi.fn();
+
+    render(
+      <Pagination
+        currentPage={12}
+        totalPages={24}
+        onPageChange={onPageChange}
+      />
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "11", exact: true })
+    );
+
+    expect(onPageChange).toHaveBeenCalledWith(11);
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "13", exact: true })
+    );
+
+    expect(onPageChange).toHaveBeenCalledWith(13);
+  });
+
+  test("hidden when 1 page", () => {
+    render(
+      <Pagination
+        currentPage={1}
+        totalPages={1}
+        onPageChange={vi.fn()}
+      />
+    );
+
+    expect(screen.queryByRole("button")).not.toBeInTheDocument();
   });
 });

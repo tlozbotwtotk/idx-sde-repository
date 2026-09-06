@@ -45,3 +45,6 @@ The frontend app now implements advanced feature 3: sorting and favorites; furth
 
 ### Week 10: Git Workflow and Code Organizing
 The github repository is updated to have proper branch and code organization.
+
+### Week 11: Comprehensive Testing and Documentation
+The app now includes test coverage that covers 70% of critical code paths and the README is now fully updated.
