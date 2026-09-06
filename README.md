@@ -15,36 +15,59 @@ A full-stack property search platform built with React (Vite), Node.js, Express,
 ## Local Setup Instructions
 *(Windows / macOS / Linux)*
 
-### 1. Clone the Repository
-```bash
-git clone <repository-url>
-cd idx-sde-repository
-```
+### Prerequisites
+* Install Node.js (LTS version) and npm
+* Install Docker Desktop
+* Use Git
+* Install VS Code (Recommended, but not required)
+* Download FileZilla
+Using FileZilla and an established FTP connection (ask for credentials), download 2 files:
+  * rets_property.sql 
+  * rets_openhouse.sql
 
-### 2. Start the Database
+### 1. Start the Database
+On Command Prompt #1
 ```bash
-docker run --name idx-mysql-local -p 3306:3306 \
-  -e MYSQL_ROOT_PASSWORD=rootpass \
+docker run --name <name-of-container> -p <some-number-from-3000-to-9999>:3306 \
+  -e MYSQL_ROOT_PASSWORD=<your-password> \
   -e MYSQL_DATABASE=rets \
   -d mysql:8.0
 
-docker exec -i idx-mysql-local mysql -uroot -prootpass rets < rets_property.sql
-docker exec -i idx-mysql-local mysql -uroot -prootpass rets < rets_openhouse.sql
+docker exec -i <name-of-container> mysql -uroot -p<your-password> rets < rets_property.sql
+docker exec -i <name-of-container> mysql -uroot -p<your-password> rets < rets_openhouse.sql
+```
+
+### 2. Clone the Repository
+Continue on Command Prompt #1
+```bash
+git clone <repository-url> <name-of-repository>
+cd <name-of-repository>
 ```
 
 ### 3. Backend Setup
+Continue on Command Prompt #1
 ```bash
 cd backend
 npm install
-cp .env.example .env  # Configure your local database credentials if needed
+echo -e "DB_HOST=localhost\nDB_PORT=<some-number-from-3000-to-9999>\nDB_USER=root\nDB_PASSWORD=<your-password>\nDB_NAME=rets" > .env
 npm run dev
 ```
 *The Express server runs on `http://localhost:5000`.*
 
-### 4. Frontend Setup
+### 4. Google Maps Setup
+* Go to https://console.cloud.google.com and sign in 
+* Create a new project 
+* Enable the Maps Embed API under APIs & Services > Library 
+* Create an API key under APIs & Services > Credentials 
+* Restrict the key to localhost:3000 and the Maps Embed API only
+* Make sure to copy the API key
+
+### 5. Frontend Setup
+On Command Prompt #2
 ```bash
 cd frontend
 npm install
+echo -e "VITE_GOOGLE_MAPS_API_KEY=<your-google-maps-embed-api>" > .env
 npm run dev
 ```
 *The Vite development server runs on `http://localhost:3000`.*
