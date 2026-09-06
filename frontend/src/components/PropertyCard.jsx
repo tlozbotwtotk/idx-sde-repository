@@ -11,6 +11,9 @@ function PropertyCard({ property, isFavorite, onToggleFavorite }) {
   }
 
   function handleHeartClick(e) {
+    // --- EVENT BUBBLING PREVENTION ---
+    // Stop the click event from bubbling up to the card wrapper 
+    // to prevent navigating to the detail page when toggling favorites
     e.stopPropagation();
     onToggleFavorite(property);
   }

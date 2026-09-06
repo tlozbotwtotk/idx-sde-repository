@@ -57,6 +57,8 @@ function PropertyFilters({
     ...savedFilters,
   });
 
+  // --- SAVED FILTERS SYNCHRONIZATION ---
+  // Keep local filter state synced if parent component updates savedFilters (e.g., clearing or URL hydration)
   useEffect(() => {
     let isMounted = true;
 
@@ -75,6 +77,7 @@ function PropertyFilters({
     };
   }, [savedFilters]);
 
+  // --- INPUT CHANGE HANDLER ---
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -84,6 +87,8 @@ function PropertyFilters({
     }));
   };
 
+  // --- SUBMISSION & SANITIZATION ---
+  // Strip out empty or whitespace-only strings before passing filters upstream
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -169,6 +174,7 @@ function PropertyFilters({
           </h3>
 
           <div style={rowContainerStyle}>
+            {/* --- CONFIG-DRIVEN ROW RENDERING --- */}
             {FILTER_ROWS.map((filter) => (
               <div
                 key={filter.key}
