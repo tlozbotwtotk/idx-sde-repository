@@ -143,8 +143,7 @@ The application relies on a MySQL database (`rets`) containing two core tables l
   * **Description:** Tracks upcoming open house days and time frames linked directly to specific property listings.
 
 ## Known Issues & Future Improvements
-* **Parallel Test Output Interleaving:** Vitest executes test suites in parallel worker threads by default, which can interleave console logs. Use `--file-parallelism=false` during isolated test debugging.
-* **Carousel Test Coverage:** `PropertyImageCarousel.jsx` is mocked during component integration and lacks an independent unit test suite.
+* **Image URLs:** Certain Image URLs have corrupted or invalid links, robust test handling is needed so the app does not crash.
 * **Future Roadmap:** Implement user authentication for persistent saved searches and add general layout enhancements.
 
 ### Troubleshooting
