@@ -102,6 +102,8 @@ router.get("/:id", async (req, res) => {
 
 router.get("/", async (req, res) => {
   try {
+    // --- PAGINATION MATH ---
+    // Ensure limit and offset are integers, falling back to 20 items per page starting at offset 0
     const limit = req.query.limit !== undefined
       ? parseInt(req.query.limit)
       : 20;
@@ -157,10 +159,13 @@ router.get("/", async (req, res) => {
       });
     }
 
+    // --- QUERY BUILDING ---
+    // Dynamically assemble conditions and parameter arrays to prevent SQL injection while supporting optional filters
     const conditions = [];
     const values = [];
 
     if (city) {
+      // Normalize string matching by trimming whitespace and lowercasing user inputs safely via parameters
       conditions.push("LOWER(TRIM(L_City)) = LOWER(TRIM(?))");
       values.push(city);
     }
@@ -195,8 +200,10 @@ router.get("/", async (req, res) => {
         ? "WHERE " + conditions.join(" AND ")
         : "";
 
-    // Sorting implementation with strict validation whitelist & tiebreaker
     let orderClause = "";
+    
+    // --- SORT VALIDATION & SECURITY ---
+    // Restrict sorting parameters strictly to a pre-approved whitelist to block SQL injection in ORDER BY clauses
     const validSortFields = [
       "L_SystemPrice",
       "ListingContractDate",

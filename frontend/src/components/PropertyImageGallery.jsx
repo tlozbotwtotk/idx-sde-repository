@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 function PropertyImageGallery({ photoData, alt = "Property" }) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -13,6 +13,7 @@ function PropertyImageGallery({ photoData, alt = "Property" }) {
 
   let photos = [];
 
+  // --- PHOTO DATA PARSING & VALIDATION ---
   if (photoData) {
     try {
       const parsedPhotos = JSON.parse(photoData);
@@ -29,9 +30,8 @@ function PropertyImageGallery({ photoData, alt = "Property" }) {
     }
   }
 
-  /*
-   * Close the lightbox when the Escape key is pressed.
-   */
+  // --- KEYBOARD EVENT LISTENER ---
+  // Close the lightbox when the Escape key is pressed.
   useEffect(() => {
     function handleKeyDown(event) {
       if (event.key === "Escape") {
@@ -69,6 +69,7 @@ function PropertyImageGallery({ photoData, alt = "Property" }) {
 
   const currentPhoto = photos[currentIndex];
 
+  // --- NAVIGATION & STATE HANDLERS ---
   function handlePrevious(event) {
     event?.stopPropagation();
 
@@ -167,6 +168,7 @@ function PropertyImageGallery({ photoData, alt = "Property" }) {
   return (
     <>
       <div className="property-image-gallery">
+        {/* --- MAIN DISPLAY SCREEN --- */}
         <div
           style={{
             position: "relative",
@@ -264,6 +266,7 @@ function PropertyImageGallery({ photoData, alt = "Property" }) {
           )}
         </div>
 
+        {/* --- THUMBNAIL STRIP --- */}
         {photos.length > 1 && (
           <div
             style={{
@@ -338,6 +341,7 @@ function PropertyImageGallery({ photoData, alt = "Property" }) {
         )}
       </div>
 
+      {/* --- FULLSCREEN LIGHTBOX MODAL --- */}
       {lightboxOpen && (
         <div
           onClick={closeLightbox}

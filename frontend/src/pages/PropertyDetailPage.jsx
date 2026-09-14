@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   fetchPropertyDetail,
@@ -17,29 +17,41 @@ function PropertyDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const loadPropertyData = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const [propertyData, openHousesData] = await Promise.all([
-        fetchPropertyDetail(id),
-        fetchOpenHouses(id),
-      ]);
-
-      setProperty(propertyData);
-      setOpenHouses(openHousesData);
-    } catch (err) {
-      console.error(err);
-      setError(err.message || "Failed to load property details.");
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
-
   useEffect(() => {
-    loadPropertyData();
-  }, [loadPropertyData]);
+    let isMounted = true;
+
+    async function initFetch() {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const [propertyData, openHousesData] = await Promise.all([
+          fetchPropertyDetail(id),
+          fetchOpenHouses(id),
+        ]);
+
+        if (isMounted) {
+          setProperty(propertyData);
+          setOpenHouses(openHousesData);
+        }
+      } catch (err) {
+        if (isMounted) {
+          console.error(err);
+          setError("Backend server is currently down.");
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    initFetch();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [id]);
 
   function formatPrice(price) {
     if (price == null) {

@@ -1,12 +1,13 @@
-import React, { useState, useEffect, useRef } from "react"; // <-- NEW: import useRef
+import { useState, useRef } from "react";
 
 function PropertyImageCarousel({ photoData, alt = "Property" }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [imageError, setImageError] = useState(false);
   const [loading, setLoading] = useState(true);
-  const imgRef = useRef(null); // <-- NEW: create the ref
+  const imgRef = useRef(null);
 
-  // Safely parse photos whether passed as a JSON string or an array
+  // --- PHOTO DATA NORMALIZATION ---
+  // Parse and sanitize photoData whether it arrives as an array or a JSON string
   let photos = [];
   if (photoData) {
     if (Array.isArray(photoData)) {
@@ -23,19 +24,12 @@ function PropertyImageCarousel({ photoData, alt = "Property" }) {
     }
   }
 
-  // Reset error and loading state whenever the active photo index changes
-  useEffect(() => {
-    setImageError(false);
-    setLoading(true);
-
-    // <-- NEW: If the browser already has this cached, clear loading instantly!
-    if (imgRef.current && imgRef.current.complete) {
-      setLoading(false);
-    }
-  }, [currentIndex]);
-
+  // --- CAROUSEL NAVIGATION HANDLERS ---
+  // Stop propagation to prevent triggering parent card clicks when navigating images
   function handlePrevious(event) {
     event.stopPropagation();
+    setImageError(false);
+    setLoading(true);
     setCurrentIndex((previousIndex) =>
       previousIndex === 0 ? photos.length - 1 : previousIndex - 1
     );
@@ -43,6 +37,8 @@ function PropertyImageCarousel({ photoData, alt = "Property" }) {
 
   function handleNext(event) {
     event.stopPropagation();
+    setImageError(false);
+    setLoading(true);
     setCurrentIndex((previousIndex) =>
       previousIndex === photos.length - 1 ? 0 : previousIndex + 1
     );
@@ -84,7 +80,7 @@ function PropertyImageCarousel({ photoData, alt = "Property" }) {
       ) : (
         <div style={imageAreaStyle}>
           <img
-            ref={imgRef} // <-- NEW: attach the ref here
+            ref={imgRef}
             key={currentPhoto}
             src={currentPhoto}
             alt={alt}
@@ -104,6 +100,7 @@ function PropertyImageCarousel({ photoData, alt = "Property" }) {
             }}
           />
 
+          {/* --- LOADING OVERLAY --- */}
           {loading && (
             <div
               className="property-image-placeholder"
@@ -121,6 +118,7 @@ function PropertyImageCarousel({ photoData, alt = "Property" }) {
         </div>
       )}
 
+      {/* --- CONDITIONAL CONTROLS RENDER --- */}
       {photos.length > 1 && (
         <div
           className="carousel-controls"

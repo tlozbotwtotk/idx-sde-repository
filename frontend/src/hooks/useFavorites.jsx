@@ -3,6 +3,9 @@ import { useState, useEffect } from "react";
 const FAVORITES_KEY = "savedPropertyFavorites";
 
 export function useFavorites() {
+  // --- LAZY INITIALIZATION & LOCALSTORAGE FALLBACK ---
+  // Initialize state using a callback function to read localStorage only once on mount, 
+  // wrapped in try/catch to prevent crashes in private browsing or restricted environments.
   const [favorites, setFavorites] = useState(() => {
     try {
       const saved = localStorage.getItem(FAVORITES_KEY);

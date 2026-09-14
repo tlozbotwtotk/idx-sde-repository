@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState, useCallback } from "react";
 import { fetchProperties } from "../api/client";
 import { useFavorites } from "../hooks/useFavorites";
 import PropertyFilters from "../components/PropertyFilters";
 import Pagination from "../components/Pagination";
-import PropertyImageCarousel from "../components/PropertyImageCarousel";
+import PropertyCard from "../components/PropertyCard";
 import "../App.css";
 
 const SAVED_FILTERS_KEY = "propertyListingFilters";
@@ -21,12 +20,14 @@ function ListingsPage() {
 
   const { favorites, isFavorite, toggleFavorite, favoritesCount } = useFavorites();
 
+  // --- SESSION STORAGE INITIALIZATION ---
+  // Lazy initialize filter state from sessionStorage with safe fallback on corruption/private mode
   const [filters, setFilters] = useState(() => {
     try {
       const savedFilters = sessionStorage.getItem(SAVED_FILTERS_KEY);
       return savedFilters ? JSON.parse(savedFilters) : {};
-    } catch (error) {
-      console.error("Failed to load saved filters:", error);
+    } catch {
+      console.error("Failed to load saved filters");
       return {};
     }
   });
@@ -35,8 +36,8 @@ function ListingsPage() {
     try {
       const savedPage = sessionStorage.getItem(SAVED_PAGE_KEY);
       return savedPage ? Number(savedPage) : 1;
-    } catch (error) {
-      console.error("Failed to load saved page:", error);
+    } catch {
+      console.error("Failed to load saved page");
       return 1;
     }
   });
@@ -44,7 +45,7 @@ function ListingsPage() {
   const [sortBy, setSortBy] = useState(() => {
     try {
       return sessionStorage.getItem(SAVED_SORT_BY_KEY) || "";
-    } catch (error) {
+    } catch {
       return "";
     }
   });
@@ -52,7 +53,7 @@ function ListingsPage() {
   const [sortOrder, setSortOrder] = useState(() => {
     try {
       return sessionStorage.getItem(SAVED_SORT_ORDER_KEY) || "ASC";
-    } catch (error) {
+    } catch {
       return "ASC";
     }
   });
@@ -62,17 +63,13 @@ function ListingsPage() {
   const displayedProperties = showFavoritesOnly ? favorites : properties;
   const totalPages = showFavoritesOnly ? 1 : Math.ceil(total / itemsPerPage);
 
-  useEffect(() => {
-    if (!showFavoritesOnly) {
-      loadProperties();
-    }
-  }, [filters, currentPage, sortBy, sortOrder, showFavoritesOnly]);
-
-  async function loadProperties() {
+  const loadProperties = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
+      // --- PAGINATION MATH ---
+      // Compute database offset based on 1-indexed current page and page size
       const offset = (currentPage - 1) * itemsPerPage;
 
       const queryParams = {
@@ -92,11 +89,28 @@ function ListingsPage() {
       setTotal(data.total);
     } catch (err) {
       console.error(err);
-      setError("Failed to load properties. Please try again.");
+      setError("Backend server is currently down.");
     } finally {
       setLoading(false);
     }
-  }
+  }, [filters, currentPage, sortBy, sortOrder, itemsPerPage]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    if (!showFavoritesOnly) {
+      const timer = setTimeout(() => {
+        if (isMounted) {
+          loadProperties();
+        }
+      }, 0);
+
+      return () => {
+        isMounted = false;
+        clearTimeout(timer);
+      };
+    }
+  }, [loadProperties, showFavoritesOnly]);
 
   function handleSearch(newFilters) {
     setShowFavoritesOnly(false);
@@ -138,9 +152,13 @@ function ListingsPage() {
     sessionStorage.setItem(SAVED_PAGE_KEY, "1");
   }
 
+  // --- RESULT WINDOW MATH ---
+  // Calculate display range (e.g., "Showing 1-20 of 45 properties")
   const startResult = total === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
   const endResult = Math.min(currentPage * itemsPerPage, total);
 
+  // --- CONTEXTUAL UI LABELS ---
+  // Switch sort direction labels depending on whether sorting by date or metrics
   const isDateSort = sortBy === "ListingContractDate";
   const ascLabel = isDateSort ? "Oldest" : "Ascending";
   const descLabel = isDateSort ? "Newest" : "Descending";
@@ -241,75 +259,6 @@ function ListingsPage() {
           )}
         </>
       )}
-    </div>
-  );
-}
-
-function PropertyCard({ property, isFavorite, onToggleFavorite }) {
-  const navigate = useNavigate();
-  const favorite = isFavorite(property.L_ListingID);
-
-  function handleClick() {
-    navigate(`/property/${property.L_ListingID}`);
-  }
-
-  function handleHeartClick(e) {
-    e.stopPropagation();
-    onToggleFavorite(property);
-  }
-
-  return (
-    <div className="property-card" onClick={handleClick} style={{ position: "relative", cursor: "pointer" }}>
-      <button 
-        onClick={handleHeartClick}
-        aria-label="Save to favorites"
-        style={{
-          position: "absolute",
-          top: "10px",
-          right: "10px",
-          background: "white",
-          border: "none",
-          borderRadius: "50%",
-          width: "35px",
-          height: "35px",
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
-          zIndex: 2,
-          fontSize: "18px"
-        }}
-      >
-        {favorite ? "❤️" : "🤍"}
-      </button>
-
-      <PropertyImageCarousel
-        photoData={property.L_Photos}
-        alt={property.L_Address}
-      />
-
-      <div className="property-info">
-        <div className="price">
-          ${property.L_SystemPrice?.toLocaleString()}
-        </div>
-
-        <div className="address">
-          {property.L_Address}
-        </div>
-
-        <div className="city">
-          {property.L_City}, {property.L_State}
-        </div>
-
-        <div className="property-details">
-          <span>{property.L_Keyword2} beds</span>
-          <span>•</span>
-          <span>{property.LM_Dec_3} baths</span>
-          <span>•</span>
-          <span>{property.LM_Int2_3?.toLocaleString()} sqft</span>
-        </div>
-      </div>
     </div>
   );
 }

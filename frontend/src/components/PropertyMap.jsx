@@ -1,6 +1,6 @@
-import React from "react";
-
 function PropertyMap({ latitude, longitude }) {
+  // --- COORDINATE VALIDATION ---
+  // Return null early if coordinates are missing or empty to prevent broken embeds
   if (
     latitude == null ||
     longitude == null ||
@@ -10,8 +10,11 @@ function PropertyMap({ latitude, longitude }) {
     return null;
   }
 
+  // --- ENVIRONMENT CONFIGURATION ---
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
+  // --- URL CONSTRUCTION ---
+  // Build the Google Maps Embed API and external directions URLs using safely encoded coordinates
   const mapUrl = `https://www.google.com/maps/embed/v1/place?key=${encodeURIComponent(
     apiKey
   )}&q=${encodeURIComponent(`${latitude},${longitude}`)}&zoom=15`;
@@ -22,6 +25,7 @@ function PropertyMap({ latitude, longitude }) {
 
   return (
     <div className="property-map-container">
+      {/* --- EMBEDDED GOOGLE MAP --- */}
       <div
         style={{
           width: "100%",
@@ -42,6 +46,7 @@ function PropertyMap({ latitude, longitude }) {
         ></iframe>
       </div>
 
+      {/* --- EXTERNAL DIRECTIONS LINK --- */}
       <div>
         <a
           href={directionsUrl}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 const INITIAL_FILTERS = {
   city: "",
@@ -57,13 +57,27 @@ function PropertyFilters({
     ...savedFilters,
   });
 
+  // --- SAVED FILTERS SYNCHRONIZATION ---
+  // Keep local filter state synced if parent component updates savedFilters (e.g., clearing or URL hydration)
   useEffect(() => {
-    setFilters({
-      ...INITIAL_FILTERS,
-      ...savedFilters,
-    });
+    let isMounted = true;
+
+    const timer = setTimeout(() => {
+      if (isMounted) {
+        setFilters({
+          ...INITIAL_FILTERS,
+          ...savedFilters,
+        });
+      }
+    }, 0);
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timer);
+    };
   }, [savedFilters]);
 
+  // --- INPUT CHANGE HANDLER ---
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -73,6 +87,8 @@ function PropertyFilters({
     }));
   };
 
+  // --- SUBMISSION & SANITIZATION ---
+  // Strip out empty or whitespace-only strings before passing filters upstream
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -158,6 +174,7 @@ function PropertyFilters({
           </h3>
 
           <div style={rowContainerStyle}>
+            {/* --- CONFIG-DRIVEN ROW RENDERING --- */}
             {FILTER_ROWS.map((filter) => (
               <div
                 key={filter.key}
