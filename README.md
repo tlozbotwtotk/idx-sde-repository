@@ -1,7 +1,6 @@
 # IDX Property Search Application
 
 ## Project Description and Screenshot
-
 A full-stack property search platform built with React (Vite), Node.js, Express, and MySQL, designed to replicate modern real estate browsing experiences using authentic MLS data.
 
 ![Application Screenshot](./screenshots/application-screenshot.png)
@@ -20,10 +19,11 @@ A full-stack property search platform built with React (Vite), Node.js, Express,
 * Install Docker Desktop
 * Use Git
 * Install VS Code (Recommended, but not required)
-* Download FileZilla
-Using FileZilla and an established FTP connection (ask for credentials), download 2 files:
+* Download FileZilla and use FTP to get these 2 files:
   * rets_property.sql 
   * rets_openhouse.sql
+
+*Note: you will need to ask me for the host, user, password, and port credentials in order to get the most up-to-date SQL files*
 
 ### 1. Start the Database
 On Command Prompt #1

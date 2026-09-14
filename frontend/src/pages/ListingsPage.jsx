@@ -89,7 +89,7 @@ function ListingsPage() {
       setTotal(data.total);
     } catch (err) {
       console.error(err);
-      setError("Failed to load properties. Please try again.");
+      setError("Backend server is currently down.");
     } finally {
       setLoading(false);
     }

@@ -37,7 +37,7 @@ function PropertyDetailPage() {
       } catch (err) {
         if (isMounted) {
           console.error(err);
-          setError(err.message || "Failed to load property details.");
+          setError("Backend server is currently down.");
         }
       } finally {
         if (isMounted) {
