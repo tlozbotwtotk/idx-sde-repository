@@ -98,7 +98,7 @@ Returns paginated listings with optional filter parameters.
 * **Example Response:**
   ```json
   {
-    "total": 2015,
+    "total": 2267,
     "limit": 20,
     "offset": 0,
     "results": [
@@ -137,19 +137,19 @@ Returns comprehensive details for a single property by ID.
 
 ### GET /api/properties/:id/openhouses
 Returns the scheduled open house list for a specific property.
-* **Example Request:** `GET /api/properties/1174572339/openhouses`
+* **Example Request:** `GET /api/properties/1178393269/openhouses`
 * **Example Response:**
   ```json
   [
     {
-      "id": 1,
-      "L_ListingID": "1174572339",
-      "L_DisplayId": "1174572339",
-      "OpenHouseDate": "2026-06-20T07:00:00.000Z",
-      "OH_StartTime": "14:00:00",
-      "OH_EndTime": "16:00:00",
-      "OH_StartDate": "2026-06-20T07:00:00.000Z",
-      "OH_EndDate": "2026-06-20T07:00:00.000Z",
+      "id": 14916,
+      "L_ListingID": "1178393269",
+      "L_DisplayId": "1178393269",
+      "OpenHouseDate": "2026-08-16T07:00:00.000Z",
+      "OH_StartTime": "13:30:00",
+      "OH_EndTime": "16:30:00",
+      "OH_StartDate": "2026-08-16T07:00:00.000Z",
+      "OH_EndDate": "2026-08-16T07:00:00.000Z",
       ...
     }
   ]
